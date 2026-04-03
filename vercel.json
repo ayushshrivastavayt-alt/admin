@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": ".",
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/reset", "dest": "/reset.html" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}

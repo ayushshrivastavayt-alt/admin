@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <meta name="description" content="Admin Panel">
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<!-- ══════════ LOGIN ══════════ -->
+<div id="loginView" class="login-wrap">
+    <div class="login-card">
+        <div class="login-brand">
+            <h1>Admin Panel</h1>
+            <p>Admin Panel</p>
+        </div>
+        <div id="loginErr" class="login-error"></div>
+        <div id="loginStep">
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" id="loginUser" class="form-input" placeholder="Enter username" autofocus>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" id="loginPass" class="form-input" placeholder="Enter password"
+                       onkeydown="if(event.key==='Enter')app.handleLogin()">
+            </div>
+            <button class="btn btn-accent" style="width:100%;margin-top:8px;" onclick="app.handleLogin()">Continue</button>
+        </div>
+        <div id="otpStep" style="display:none;">
+            <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:16px;">OTP sent to your Telegram</p>
+            <div class="form-group">
+                <label class="form-label">OTP</label>
+                <input type="text" id="loginOtp" class="form-input" placeholder="6-digit OTP" inputmode="numeric"
+                       onkeydown="if(event.key==='Enter')app.handleOTP()">
+            </div>
+            <button class="btn btn-accent" style="width:100%;" onclick="app.handleOTP()">Verify & Login</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<div id="dashView" class="app" style="display:none;">
+
+    <div class="topbar">
+        <div class="topbar-brand">Admin Panel</div>
+        <div class="topbar-right">
+            <span id="topRole" class="badge badge-gold">OWNER</span>
+            <span id="topMod" class="badge badge-green" style="display:none;">ALL</span>
+            <span id="topCredits" class="badge badge-green" style="display:none;">0 Credits</span>
+            <span id="topCreditsUsed" class="badge badge-yellow" style="display:none;">0 Used</span>
+            <span id="topUser" style="color:var(--text-secondary);font-size:0.85rem;">—</span>
+            <button id="btnMaint" class="btn btn-sm btn-danger" onclick="app.toggleMaint()" style="display:none;">🔴 Maint: OFF</button>
+            <button id="btnResetAll" class="btn btn-sm btn-warning" onclick="app.resetAllKeys()" style="display:none;">Reset All Keys</button>
+            <button class="btn btn-sm btn-outline" onclick="app.logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="main">
+
+        <!-- Owner Stats -->
+        <div class="card" id="statsCard" style="display:none;">
+            <div class="card-title">📊 System Statistics</div>
+            <div class="stats-grid">
+                <div class="stat-card" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);">
+                    <div class="stat-value" id="sTotal">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">
+                    <div class="stat-value" id="sSessions">0</div>
+                    <div class="stat-label">Sessions</div>
+                </div>
+                <div class="stat-card" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
+                    <div class="stat-value" id="sBanned">0</div>
+                    <div class="stat-label">Banned</div>
+                </div>
+                <div class="stat-card" style="background:linear-gradient(135deg,#10b981,#059669);">
+                    <div class="stat-value" id="sUsers">0</div>
+                    <div class="stat-label">End Users</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Owner: Admin Usage Tracking -->
+        <div class="card" id="adminUsageCard" style="display:none;">
+            <div class="card-title">💰 Admin Credits Usage</div>
+            <p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:12px;">Track how many credits each admin has consumed. Reset to 0 after payment.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Admin</th><th>Mod</th><th>Credits Used</th><th>Since</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="adminUsageTbody">
+                        <tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--text-muted);">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Create Account -->
+        <div class="card">
+            <div class="card-title">➕ Create Account</div>
+            <div class="form-grid">
+                <div class="form-group" id="grpCount">
+                    <label class="form-label">Amount (Bulk)</label>
+                    <input type="number" id="cCount" class="form-input" value="1" min="1" max="100"
+                           oninput="app.updateCreateBtn()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <select id="cRole" class="form-select" onchange="app.onRoleChange()"></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" id="cUser" class="form-input" placeholder="Username (or prefix for bulk)">
+                </div>
+                <div class="form-group" id="passGroup">
+                    <label class="form-label">Password</label>
+                    <input type="text" id="cPass" class="form-input" placeholder="Password">
+                </div>
+                <div class="form-group" id="grpDays">
+                    <label class="form-label">Duration</label>
+                    <select id="cDays" class="form-select" onchange="app.updateCreateBtn()">
+                        <option value="10">10 Days (1 credit)</option>
+                        <option value="20">20 Days (2 credits)</option>
+                        <option value="30">30 Days (3 credits)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="grpMod">
+                    <label class="form-label">Mod (App)</label>
+                    <select id="cMod" class="form-select">
+                        <option value="all">All Apps</option>
+                        <option value="brutal">Brutal</option>
+                        <option value="ninex">NineX</option>
+                        <option value="safe">Safe (Sensi)</option>
+                    </select>
+                </div>
+                <!-- Mod checkboxes for admin/seller/reseller creation -->
+                <div class="form-group" id="grpAdminMod" style="display:none;">
+                    <label class="form-label">Allowed Mods to Sell</label>
+                    <div id="modCheckboxes" class="mod-checks"></div>
+                </div>
+                <div class="form-group" id="grpTelegram" style="display:none;">
+                    <label class="form-label">Telegram ID</label>
+                    <input type="text" id="cTelegram" class="form-input" placeholder="Telegram Chat ID (for OTP)">
+                </div>
+                <div class="form-group" id="grpCredits" style="display:none;">
+                    <label class="form-label">Credits to Give <span style="opacity:0.5;font-size:10px;">(deducted from you)</span></label>
+                    <input type="number" id="cCreditsGive" class="form-input" value="10" min="0"
+                           oninput="app.updateCreateBtn()">
+                </div>
+                <div class="form-group full">
+                    <button id="btnCreate" class="btn btn-accent" style="width:100%;" onclick="app.handleCreate()">Create Account</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="card">
+            <div class="card-title">👥 User Management</div>
+            <div class="controls">
+                <input type="text" id="searchInput" class="form-input" placeholder="Search..."
+                       onkeydown="if(event.key==='Enter')app.doSearch()">
+                <button class="btn btn-outline" onclick="app.doSearch()">Search</button>
+                <select class="form-select" onchange="app.doSort(this.value)">
+                    <option value="latest">Latest</option>
+                    <option value="oldest">Oldest</option>
+                    <option value="az">A → Z</option>
+                    <option value="za">Z → A</option>
+                </select>
+                <select class="form-select" onchange="app.doPageSize(this.value)">
+                    <option value="25">25</option>
+                    <option value="50" selected>50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Username</th><th>Role</th><th>Mod</th><th>Status</th><th>Expires</th><th>Creator</th><th>HWID / Credits</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="tbody">
+                        <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted);">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination">
+                <span id="pagInfo">0 users</span>
+                <div>
+                    <button id="pagPrev" onclick="app.prevPage()">‹</button>
+                    <button id="pagNext" onclick="app.nextPage()">›</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Modal -->
+<div id="bulkModal" class="modal-overlay">
+    <div class="modal-card">
+        <button class="modal-close" onclick="document.getElementById('bulkModal').classList.remove('show')">&times;</button>
+        <h2>Accounts Created</h2>
+        <p style="color:var(--text-muted);font-size:0.85rem;">Copy now — passwords shown once!</p>
+        <textarea id="bulkText" readonly></textarea>
+        <button class="btn btn-accent" style="width:100%;margin-top:12px;" onclick="navigator.clipboard.writeText(document.getElementById('bulkText').value).then(()=>app.ok('Copied!'))">Copy to Clipboard</button>
+    </div>
+</div>
+
+<!-- Loading -->
+<div id="loadOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <span id="loadText" style="color:#fff;font-weight:600;">Loading...</span>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="config/env.js"></script>
+<script src="config/config.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
